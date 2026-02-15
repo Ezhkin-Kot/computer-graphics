@@ -24,6 +24,11 @@ int main() {
         DrawLineEx({0, 0}, {Wx, Wy}, 6, RED);
         DrawLineEx({90, 50}, {Wx, 80}, 10, BLUE);
 
+        DrawLineEx({0, Wy / 3}, {Wx * 2 / 3, 0}, 5, GREEN);
+        DrawLineEx({Wx * 2 / 3, 0}, {Wx, Wy * 2 / 3}, 5, GREEN);
+        DrawLineEx({Wx, Wy * 2 / 3}, {Wx / 3, Wy}, 5, GREEN);
+        DrawLineEx({Wx / 3, Wy}, {0, Wy / 3}, 5, GREEN);
+
         DrawTextEx(f, "Добро пожаловать на компьютерную графику", {40, 380}, 26,
                    0, BLACK);
 
