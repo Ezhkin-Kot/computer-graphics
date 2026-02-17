@@ -1,1 +1,0 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/lab1.dir/main.cpp.o -o lab1  ../../Libraries/nfd/src/libnfd.a ../../Libraries/raygui/libraygui.a ../../Libraries/raylib/raylib/libraylib.a -framework AppKit -framework UniformTypeIdentifiers -framework OpenGL -framework Cocoa -framework IOKit -framework CoreFoundation
