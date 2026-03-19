@@ -25,3 +25,15 @@ inline Mat3 rotate(float theta) {
     res[1][0] = -res[0][1];
     return res;
 }
+
+inline Mat3 mirrorX() {
+    Mat3 res = Mat3(1.f);
+    res[1][1] = -1;
+    return res;
+}
+
+inline Mat3 mirrorY() {
+    Mat3 res = Mat3(1.f);
+    res[0][0] = -1;
+    return res;
+}

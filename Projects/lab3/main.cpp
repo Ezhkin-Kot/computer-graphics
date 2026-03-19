@@ -156,16 +156,16 @@ int main() {
             T = translate(-1, 0) * T;
         }
         if (IsKeyDown(KEY_T)) {
-            T = translate(0, -1) * T;
+            T = translate(0, -10) * T;
         }
         if (IsKeyDown(KEY_G)) {
-            T = translate(0, 1) * T;
+            T = translate(0, 10) * T;
         }
         if (IsKeyDown(KEY_F)) {
-            T = translate(-1, 0) * T;
+            T = translate(-10, 0) * T;
         }
         if (IsKeyDown(KEY_H)) {
-            T = translate(1, 0) * T;
+            T = translate(10, 0) * T;
         }
 
         if (IsKeyDown(KEY_Z)) {
@@ -175,7 +175,39 @@ int main() {
         }
         if (IsKeyDown(KEY_X)) {
             T = translate(-Wcx, -Wcy) * T;
-            T = scale(0.9f) * T; // Уменьшение в 1.1 раза
+            T = scale(1.0f / 1.1f) * T; // Уменьшение в 1.1 раза
+            T = translate(Wcx, Wcy) * T;
+        }
+
+        if (IsKeyPressed(KEY_U)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = mirrorX() * T;
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyPressed(KEY_J)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = mirrorY() * T;
+            T = translate(Wcx, Wcy) * T;
+        }
+
+        if (IsKeyDown(KEY_I)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = scale(1.1f, 1.0f) * T;
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyDown(KEY_K)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = scale(1.0f / 1.1f, 1.0f) * T;
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyDown(KEY_O)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = scale(1.0f, 1.1f) * T;
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyDown(KEY_L)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = scale(1.0f, 1.0f / 1.1f) * T;
             T = translate(Wcx, Wcy) * T;
         }
 
