@@ -1,7 +1,5 @@
 #include "figure.hpp"
-#include "hare.hpp"
 #include "matrix.hpp"
-// #include "mushroom.hpp"
 #include "raygui.h"
 #include "transform.hpp"
 #include <fstream>
@@ -129,9 +127,56 @@ int main() {
             T = rotate(-0.01f) * T;
             T = translate(Wcx, Wcy) * T; // Перенос начала координат обратно
         }
+        if (IsKeyDown(KEY_E)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = rotate(0.01f) * T; // Поворот на 0.01 радиан
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyDown(KEY_R)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = rotate(0.05f) * T; // Поворот на 0.05 радиан
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyDown(KEY_Y)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = rotate(-0.05f) * T; // Поворот на -0.05 радиан
+            T = translate(Wcx, Wcy) * T;
+        }
 
         if (IsKeyDown(KEY_W)) {
             T = translate(0, -1) * T;
+        }
+        if (IsKeyDown(KEY_S)) {
+            T = translate(0, 1) * T;
+        }
+        if (IsKeyDown(KEY_D)) {
+            T = translate(1, 0) * T;
+        }
+        if (IsKeyDown(KEY_A)) {
+            T = translate(-1, 0) * T;
+        }
+        if (IsKeyDown(KEY_T)) {
+            T = translate(0, -1) * T;
+        }
+        if (IsKeyDown(KEY_G)) {
+            T = translate(0, 1) * T;
+        }
+        if (IsKeyDown(KEY_F)) {
+            T = translate(-1, 0) * T;
+        }
+        if (IsKeyDown(KEY_H)) {
+            T = translate(1, 0) * T;
+        }
+
+        if (IsKeyDown(KEY_Z)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = scale(1.1f) * T; // Увеличение в 1.1 раза
+            T = translate(Wcx, Wcy) * T;
+        }
+        if (IsKeyDown(KEY_X)) {
+            T = translate(-Wcx, -Wcy) * T;
+            T = scale(0.9f) * T; // Уменьшение в 1.1 раза
+            T = translate(Wcx, Wcy) * T;
         }
 
         if (IsKeyPressed(KEY_C)) {
