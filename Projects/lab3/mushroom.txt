@@ -1,6 +1,6 @@
 frame 10 15
 
-# Cap (Outer)
+# Шляпка (контур)
 color 255 0 0
 thickness 2
 path 10
@@ -27,8 +27,8 @@ path 4
 1.5 5
 0.5 6
 
-# Cap (Inner)
-color 245 245 220 # beige
+# Шляпка (внутренность)
+color 245 245 220 # бежевый
 thickness 1
 path 9
 1 6.5
@@ -47,8 +47,8 @@ path 4
 2 5.5
 1 6.5
 
-# Stem
-color 255 228 196 # bisque
+# Ножка
+color 255 228 196 # светло-коричневый
 thickness 2
 path 12
 5 0.5
@@ -64,8 +64,8 @@ path 12
 6 1
 5 0.5
 
-# Gills
-color 100 100 100 # dark grey
+# Пластинки
+color 100 100 100 # тёмно-серый
 thickness 1
 path 2
 3.5 6
@@ -89,8 +89,8 @@ path 2
 6.5 6
 8.5 7
 
-# Spots
-color 255 255 255 # white
+# Пятна
+color 255 255 255 # белый
 thickness 2
 # левое маленькое пятно
 path 3
@@ -161,8 +161,8 @@ path 4
 8 8
 8.5 8.5
 
-# Grass
-color 0 128 0 # green
+# Трава
+color 0 128 0 # зелёный
 thickness 1
 # левая часть
 path 2

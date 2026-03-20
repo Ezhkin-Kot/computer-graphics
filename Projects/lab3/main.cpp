@@ -71,6 +71,7 @@ int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(600, 480, "Lab 3");
     SetTargetFPS(60);
+    SetExitKey(KEY_NULL);
 
     int cnt = 0;
     int *codepoints = LoadCodepoints(LETTERS, &cnt);
@@ -211,7 +212,7 @@ int main() {
             T = translate(Wcx, Wcy) * T;
         }
 
-        if (IsKeyPressed(KEY_C)) {
+        if (IsKeyPressed(KEY_ESCAPE)) {
             T = initT;
         }
 
