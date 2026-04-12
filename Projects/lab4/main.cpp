@@ -1,3 +1,4 @@
+#include "clip.hpp"
 #include "figure.hpp"
 #include "matrix.hpp"
 #include "raygui.h"
@@ -69,9 +70,10 @@ ssu::Figure readFromFile(const char *fileName) {
 
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(600, 480, "Lab 3");
+    InitWindow(600, 480, "Lab 4");
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
+    SetWindowMinSize(155, 120);
 
     int cnt = 0;
     int *codepoints = LoadCodepoints(LETTERS, &cnt);
@@ -81,6 +83,8 @@ int main() {
     Mat3 T = Mat3(1.f); // Матрица, в которой накапливаются все преобразования
                         // первоначально - единичная матрица
     Mat3 initT;         // Матрица начального преобразования
+
+    float left = 30.0f, right = 100.0f, top = 20.0f, bottom = 50.0f;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -92,6 +96,12 @@ int main() {
         const float Wcy = Wy / 2.0f;
         const float windowAspect = Wx / Wy;
 
+        DrawRectangleLinesEx({left, top, Wx - left - right, Wy - top - bottom},
+                             2, BLACK);
+
+        float minX = left, maxX = Wx - right; // пределы изменения x
+        float minY = top, maxY = Wy - bottom; // пределы изменения y
+
         if (GuiButton({Wx - 140, 20, 120, 30}, "OPEN FILE")) {
             nfdchar_t *outPath;
             nfdfilteritem_t filterItem[2] = {{"Text files", "txt"},
@@ -102,16 +112,18 @@ int main() {
             if (result == NFD_OKAY) {
                 figure = readFromFile(outPath);
                 const float figureAspect = figure.Vx / figure.Vy;
-                const float S = figureAspect < windowAspect ? Wy / figure.Vy
-                                                            : Wx / figure.Vx;
+                const float S = figureAspect < windowAspect
+                                    ? (Wy - top - bottom) / figure.Vy
+                                    : (Wx - left - right) / figure.Vx;
+                const float Tx = left;
                 const float Ty =
-                    S * figure.Vy; // Смещение в положительную сторону по
-                                   // оси Oy после смены знака
+                    S * figure.Vy + top; // Смещение в положительную сторону по
+                                         // оси Oy после смены знака
 
                 // Преобразования применяются справа-налево. Сначала
                 // масштабирование, а потом перенос.
                 // В initT совмещаем эти два преобразования.
-                initT = translate(0, Ty) * scale(S, -S);
+                initT = translate(Tx, Ty) * scale(S, -S);
                 T = initT;
                 NFD_FreePath(outPath);
             } else if (result == NFD_CANCEL) {
@@ -221,10 +233,13 @@ int main() {
         for (const auto &lines : figure.paths) {
             Vec2 start = normalize(T * Vec3(lines.vertices[0], 1));
             for (const auto &line : lines.vertices) {
-                const Vec2 end = normalize(T * Vec3(line, 1));
-                DrawLineEx({start.x, start.y}, {end.x, end.y}, lines.thickness,
-                           lines.color);
-                start = end;
+                Vec2 end = normalize(T * Vec3(line, 1));
+                Vec2 tmpEnd = end;
+                if (clip(start, end, minX, minY, maxX, maxY)) {
+                    DrawLineEx({start.x, start.y}, {end.x, end.y},
+                               lines.thickness, lines.color);
+                }
+                start = tmpEnd;
             }
         }
         EndDrawing();
