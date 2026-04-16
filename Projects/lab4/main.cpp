@@ -85,6 +85,10 @@ int main() {
     Mat3 initT;         // Матрица начального преобразования
 
     float left = 30.0f, right = 100.0f, top = 20.0f, bottom = 50.0f;
+    float mixX = left, maxX; // диапазон изменения координат x
+    float minY = top, maxY;  // диапазон изменения координат y
+    float Wcx = left, Wcy;   // координаты левого нижнего угла прямоугольника
+    float Wx, Wy;            // ширина и высота прямоугольника
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -95,12 +99,15 @@ int main() {
         const float Wcx = Wx / 2.0f;
         const float Wcy = Wy / 2.0f;
         const float windowAspect = Wx / Wy;
-
-        DrawRectangleLinesEx({left, top, Wx - left - right, Wy - top - bottom},
-                             2, BLACK);
-
         float minX = left, maxX = Wx - right; // пределы изменения x
         float minY = top, maxY = Wy - bottom; // пределы изменения y
+        float Rx = maxX - minX;
+        float Ry = maxY - minY;
+        float Rcx = minX;
+        float Rcy = maxY;
+        float rectAspect = Rx / Ry;
+
+        DrawRectangleLinesEx({minX, minY, Rx, Ry}, 2, BLACK);
 
         if (GuiButton({Wx - 140, 20, 120, 30}, "OPEN FILE")) {
             nfdchar_t *outPath;
@@ -112,18 +119,17 @@ int main() {
             if (result == NFD_OKAY) {
                 figure = readFromFile(outPath);
                 const float figureAspect = figure.Vx / figure.Vy;
-                const float S = figureAspect < windowAspect
-                                    ? (Wy - top - bottom) / figure.Vy
-                                    : (Wx - left - right) / figure.Vx;
-                const float Tx = left;
-                const float Ty =
-                    S * figure.Vy + top; // Смещение в положительную сторону по
-                                         // оси Oy после смены знака
+                const float rectAspect = Rx / Ry;
+                const float S =
+                    figureAspect < rectAspect ? Ry / figure.Vy : Rx / figure.Vx;
+                // смещение центра рисунка с началом координат
+                const Mat3 T1 = translate(-figure.Vx / 2, -figure.Vy / 2);
+                const Mat3 S1 = scale(S, -S);
+                // сдвиг точки привязки из начала координат в нужную позицию
+                const Mat3 T2 = translate(Rx / 2 + Rcx, Rcy - Ry / 2);
 
-                // Преобразования применяются справа-налево. Сначала
-                // масштабирование, а потом перенос.
-                // В initT совмещаем эти два преобразования.
-                initT = translate(Tx, Ty) * scale(S, -S);
+                // В initT совмещаем эти три преобразования (справа налево)
+                initT = T2 * (S1 * T1);
                 T = initT;
                 NFD_FreePath(outPath);
             } else if (result == NFD_CANCEL) {

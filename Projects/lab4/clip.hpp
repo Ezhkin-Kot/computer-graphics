@@ -3,9 +3,8 @@
 #include "matrix.hpp"
 #include <algorithm>
 
-inline unsigned int codeKS(Vec2 P, float minX, float minY, float maxX,
-                           float maxY) {
-    unsigned int code = 0;
+inline int codeKS(Vec2 P, float minX, float minY, float maxX, float maxY) {
+    int code = 0;
 
     if (P.x < minX) {
         code += 1;
@@ -22,8 +21,8 @@ inline unsigned int codeKS(Vec2 P, float minX, float minY, float maxX,
 
 inline bool clip(Vec2 &A, Vec2 &B, float minX, float minY, float maxX,
                  float maxY) {
-    unsigned int codeA = codeKS(A, minX, minY, maxX, maxY);
-    unsigned int codeB = codeKS(B, minX, minY, maxX, maxY);
+    int codeA = codeKS(A, minX, minY, maxX, maxY);
+    int codeB = codeKS(B, minX, minY, maxX, maxY);
     while (codeA | codeB) {
         if (codeA & codeB) { // поразрядное И не равно нулю
             return false;    // отрезок полностью невидим
