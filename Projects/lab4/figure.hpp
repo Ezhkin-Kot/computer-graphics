@@ -18,12 +18,14 @@ struct Path {
 
 struct Figure {
     std::vector<Path> paths;
+    Mat3 modelM;
     float Vx;
     float Vy;
 
     Figure() = default;
-    Figure(std::vector<Path> paths, float Vx, float Vy)
+    Figure(std::vector<Path> paths, Mat3 mat, float Vx, float Vy)
         : paths(paths),
+          modelM(mat),
           Vx(Vx),
           Vy(Vy) {}
 };
