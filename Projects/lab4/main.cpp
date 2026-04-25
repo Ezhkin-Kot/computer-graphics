@@ -3,6 +3,7 @@
 #include "keymap.hpp"
 #include "matrix.hpp"
 #include "raygui.h"
+#include "screen.hpp"
 #include "transform.hpp"
 #include <fstream>
 #include <iostream>
@@ -20,7 +21,7 @@ bool isIgnorableLine(const std::string &line) {
            line.front() == '#';
 }
 
-std::vector<ssu::Figure> readFromFile(const char *fileName) {
+std::vector<ssu::Figure> readFromFile(const char *fileName, Screen &screen) {
     std::ifstream in(fileName);
     std::vector<ssu::Figure> models;
     Mat3 M = Mat3(1.f);
@@ -43,7 +44,15 @@ std::vector<ssu::Figure> readFromFile(const char *fileName) {
         s >> cmd;             // Считываем имя команды
         if (cmd == "frame") { // Размеры изображения
             s >> Vx >> Vy;
-            std::cout << Vx << ' ' << Vy << std::endl;
+            float figAspect = Vx / Vy;
+            Mat3 T1 = translate(-Vx / 2, -Vy / 2);
+            float S =
+                figAspect < screen.rectAspect ? screen.Ry / Vy : screen.Rx / Vx;
+            Mat3 S1 = scale(S, -S);
+            Mat3 T2 = translate(screen.Rcx + screen.Rx / 2,
+                                screen.Rcy - screen.Ry / 2);
+            screen.initT = T2 * (S1 * T1);
+            screen.T = screen.initT;
         } else if (cmd == "color") {     // Цвет линии
             s >> r >> g >> b;            // Считываем три компоненты цвета
         } else if (cmd == "thickness") { // Толщина линии
@@ -117,33 +126,17 @@ int main() {
     int *codepoints = LoadCodepoints(LETTERS, &cnt);
     Font f = LoadFontEx("Assets/Fonts/JetBrainsMono-Regular.ttf", 100,
                         codepoints, cnt);
-    std::vector<ssu::Figure> models;
-    Mat3 T = Mat3(1.f); // Матрица, в которой накапливаются все преобразования
-                        // первоначально - единичная матрица
-    Mat3 initT;         // Матрица начального преобразования
 
-    float left = 30.0f, right = 100.0f, top = 20.0f, bottom = 50.0f;
+    std::vector<ssu::Figure> models;
+    Screen s;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(SKYBLUE);
 
-        const float Wx = static_cast<float>(GetScreenWidth());
-        const float Wy = static_cast<float>(GetScreenHeight());
-        const float Wcx = Wx / 2.0f;
-        const float Wcy = Wy / 2.0f;
-        const float windowAspect = Wx / Wy;
-        float minX = left, maxX = Wx - right; // пределы изменения x
-        float minY = top, maxY = Wy - bottom; // пределы изменения y
-        float Rx = maxX - minX;
-        float Ry = maxY - minY;
-        float Rcx = minX;
-        float Rcy = maxY;
-        float rectAspect = Rx / Ry;
+        DrawRectangleLinesEx({s.minX, s.minY, s.Rx, s.Ry}, 2, BLACK);
 
-        DrawRectangleLinesEx({minX, minY, Rx, Ry}, 2, BLACK);
-
-        if (GuiButton({Wx - 140, 20, 120, 30}, "OPEN FILE")) {
+        if (GuiButton({s.Wx - 140, 20, 120, 30}, "OPEN FILE")) {
             nfdchar_t *outPath;
             nfdfilteritem_t filterItem[2] = {{"Text files", "txt"},
                                              {"All files", "*"}};
@@ -151,7 +144,7 @@ int main() {
                 NFD_OpenDialog(&outPath, filterItem, 2, nullptr);
 
             if (result == NFD_OKAY) {
-                models = readFromFile(outPath);
+                models = readFromFile(outPath, s);
                 NFD_FreePath(outPath);
             } else if (result == NFD_CANCEL) {
                 std::cerr << "INFO: NFD: user pressed cancel" << std::endl;
@@ -160,19 +153,16 @@ int main() {
             }
         }
 
-        keymap_handler(T, initT, Wcx, Wcy);
-
-        Mat3 M = T * initT; // Совмещение начального преобразования и
-                            // накопленных преобразований
+        keymap_handler(s);
 
         for (const auto &figure : models) {
-            Mat3 TM = T * figure.modelM;
+            Mat3 TM = s.T * figure.modelM;
             for (const auto &lines : figure.paths) {
-                Vec2 start = normalize(T * Vec3(lines.vertices[0], 1));
+                Vec2 start = normalize(TM * Vec3(lines.vertices[0], 1));
                 for (const auto &line : lines.vertices) {
-                    Vec2 end = normalize(T * Vec3(line, 1));
+                    Vec2 end = normalize(TM * Vec3(line, 1));
                     Vec2 tmpEnd = end;
-                    if (clip(start, end, minX, minY, maxX, maxY)) {
+                    if (clip(start, end, s.minX, s.minY, s.maxX, s.maxY)) {
                         DrawLineEx({start.x, start.y}, {end.x, end.y},
                                    lines.thickness, lines.color);
                     }
