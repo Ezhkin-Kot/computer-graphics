@@ -134,6 +134,8 @@ int main() {
         BeginDrawing();
         ClearBackground(SKYBLUE);
 
+        s.update();
+
         DrawRectangleLinesEx({s.minX, s.minY, s.Rx, s.Ry}, 2, BLACK);
 
         if (GuiButton({s.Wx - 140, 20, 120, 30}, "OPEN FILE")) {

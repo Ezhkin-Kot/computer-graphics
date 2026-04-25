@@ -14,7 +14,7 @@ struct Screen {
     Mat3 T = Mat3(1.f);
     Mat3 initT = Mat3(1.f);
 
-    Screen() {
+    void update() {
         Wx = static_cast<float>(GetScreenWidth());
         Wy = static_cast<float>(GetScreenHeight());
         Wcx = Wx / 2.0f;
