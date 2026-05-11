@@ -10,7 +10,22 @@ struct Vec2 {
     Vec2(float a, float b)
         : x(a),
           y(b) {}
+
+    Vec2 &operator*=(const Vec2 &v) {
+        x *= v.x;
+        y *= v.y;
+        return *this;
+    }
+
+    const Vec2 operator*(const Vec2 &v) const { return Vec2(*this) *= v; }
+
+    float &operator[](int i) { return ((float *)this)[i]; }
 };
+
+inline float dot(const Vec2 &a, const Vec2 &b) {
+    Vec2 tmp = a * b;
+    return tmp.x + tmp.y;
+}
 
 struct Vec3 {
     float x = 0;
@@ -46,6 +61,94 @@ inline float dot(const Vec3 &a, const Vec3 &b) {
     return tmp.x + tmp.y + tmp.z;
 }
 
+struct Vec4 {
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    float a = 0;
+
+    Vec4() {}
+    Vec4(float a, float b, float c, float d)
+        : x(a),
+          y(b),
+          z(c),
+          a(d) {}
+    Vec4(Vec3 v, float c)
+        : Vec4(v.x, v.y, v.z, c) {}
+
+    Vec4 &operator*=(const Vec4 &v) {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+        a *= v.a;
+        return *this;
+    }
+
+    const Vec4 operator*(const Vec4 &v) const { return Vec4(*this) *= v; }
+
+    float &operator[](int i) { return ((float *)this)[i]; }
+};
+
+inline float dot(const Vec4 &a, const Vec4 &b) {
+    Vec4 tmp = a * b;
+    return tmp.x + tmp.y + tmp.z + tmp.a;
+}
+
+inline Vec3 normalize(const Vec4 &v) {
+    return Vec3(v.x / v.a, v.y / v.a, v.z / v.a);
+}
+
+struct Mat4 {
+    Vec4 row1{};
+    Vec4 row2{};
+    Vec4 row3{};
+    Vec4 row4{};
+
+    Mat4() {}
+    Mat4(Vec4 r1, Vec4 r2, Vec4 r3, Vec4 r4)
+        : row1(r1),
+          row2(r2),
+          row3(r3),
+          row4(r4) {}
+    Mat4(float a) {
+        row1 = Vec4(a, 0.f, 0.f, 0.f);
+        row2 = Vec4(0.f, a, 0.f, 0.f);
+        row3 = Vec4(0.f, 0.f, a, 0.f);
+        row4 = Vec4(0.f, 0.f, 0.f, a);
+    }
+
+    Vec4 &operator[](size_t i) { return ((Vec4 *)this)[i]; }
+
+    Mat4 &transpose() {
+        Mat4 tmp(*this);
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                (*this)[i][j] = tmp[j][i];
+            }
+        }
+        return *this;
+    }
+
+    const Vec4 operator*(const Vec4 &v) {
+        Vec4 res{};
+        for (int i = 0; i < 4; i++) {
+            res[i] = dot((*this)[i], v);
+        }
+        return res;
+    }
+
+    Mat4 &operator*=(const Mat4 &m) {
+        Mat4 A(*this), B(m);
+        B.transpose();
+        for (int i = 0; i < 4; i++) {
+            (*this)[i] = A * B[i];
+        }
+        return (*this).transpose();
+    }
+
+    const Mat4 operator*(const Mat4 &m) const { return Mat4(*this) *= m; }
+};
+
 struct Mat3 {
     Vec3 row1{};
     Vec3 row2{};
@@ -60,6 +163,11 @@ struct Mat3 {
         row1 = Vec3(a, 0.f, 0.f);
         row2 = Vec3(0.f, a, 0.f);
         row3 = Vec3(0.f, 0.f, a);
+    }
+    Mat3(Mat4 m) {
+        row1 = Vec3(m.row1.x, m.row1.y, m.row1.z);
+        row2 = Vec3(m.row2.x, m.row2.y, m.row2.z);
+        row3 = Vec3(m.row3.x, m.row3.y, m.row3.z);
     }
 
     Vec3 &operator[](size_t i) { return (reinterpret_cast<Vec3 *>(this))[i]; }
@@ -100,3 +208,53 @@ struct Mat3 {
 };
 
 inline Vec2 normalize(const Vec3 &v) { return Vec2(v.x / v.z, v.y / v.z); }
+
+struct Mat2 {
+    Vec2 row1{};
+    Vec2 row2{};
+
+    Mat2() {}
+    Mat2(Vec2 r1, Vec2 r2)
+        : row1(r1),
+          row2(r2) {}
+    Mat2(float a) {
+        row1 = Vec2(a, 0.f);
+        row2 = Vec2(0.f, a);
+    }
+    Mat2(Mat3 m) {
+        row1 = Vec2(m[0][0], m[0][1]);
+        row2 = Vec2(m[1][0], m[1][1]);
+    }
+
+    Vec2 &operator[](int i) { return ((Vec2 *)this)[i]; }
+
+    const Vec2 &operator[](int i) const { return ((const Vec2 *)this)[i]; }
+
+    Mat2 &transpose() {
+        Mat2 tmp(*this);
+        for (int i = 0; i < 2; i++)
+            for (int j = 0; j < 2; j++)
+                (*this)[i][j] = tmp[j][i];
+        return *this;
+    }
+
+    const Vec2 operator*(const Vec2 &v) const {
+        Vec2 res{};
+        for (int i = 0; i < 2; i++) {
+            res[i] = dot((*this)[i], v);
+        }
+        return res;
+    }
+
+    Mat2 &operator*=(const Mat2 &m) {
+        Mat2 A(*this);
+        Mat2 B(m);
+        B.transpose();
+        for (int i = 0; i < 2; i++) {
+            (*this)[i] = A * B[i];
+        }
+        return this->transpose();
+    }
+
+    const Mat2 operator*(const Mat2 &m) const { return Mat2(*this) *= m; }
+};
