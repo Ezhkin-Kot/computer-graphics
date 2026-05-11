@@ -123,6 +123,8 @@ inline float dot(const Vec4 &a, const Vec4 &b) {
     return tmp.x + tmp.y + tmp.z + tmp.a;
 }
 
+inline Vec2 normalize(const Vec3 &v) { return Vec2(v.x / v.z, v.y / v.z); }
+
 inline Vec3 normalize(const Vec4 &v) {
     return Vec3(v.x / v.a, v.y / v.a, v.z / v.a);
 }
@@ -257,20 +259,7 @@ struct Mat3 {
         return *this;
     }
     const Mat3 operator*(const float &n) const { return Mat3(*this) *= n; }
-
-    Mat3 crossM(Vec3 p) {
-        return Mat3(Vec3(0.f, -p.z, p.y), Vec3(p.z, 0.f, -p.x),
-                    Vec3(-p.y, p.x, 0.f));
-    }
-
-    Vec3 cross(Vec3 p, Vec3 q) { return crossM(p) * q; }
-
-    float length(Vec3 p) { return sqrtf(dot(p, p)); }
-
-    Vec3 norm(Vec3 p) { return normalize(Vec4(p, length(p))); }
 };
-
-inline Vec2 normalize(const Vec3 &v) { return Vec2(v.x / v.z, v.y / v.z); }
 
 struct Mat2 {
     Vec2 row1{};
@@ -320,3 +309,14 @@ struct Mat2 {
     }
     const Mat2 operator*(const Mat2 &m) const { return Mat2(*this) *= m; }
 };
+
+inline Mat3 crossM(const Vec3 &p) {
+    return Mat3(Vec3(0.f, -p.z, p.y), Vec3(p.z, 0.f, -p.x),
+                Vec3(-p.y, p.x, 0.f));
+}
+
+inline Vec3 cross(const Vec3 &p, const Vec3 &q) { return crossM(p) * q; }
+
+inline float length(const Vec3 &p) { return sqrtf(dot(p, p)); }
+
+inline Vec3 norm(const Vec3 &p) { return normalize(Vec4(p, length(p))); }
