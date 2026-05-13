@@ -11,8 +11,18 @@ struct Screen {
     float Rx, Ry, Rcx, Rcy;
     float rectAspect;
 
-    Mat3 T = Mat3(1.f);
-    Mat3 initT = Mat3(1.f);
+    Mat4 T = Mat4(1.f);
+    Mat4 initT = Mat4(1.f);
+
+    Vec3 S, P, u; // Camera
+
+    float dist;         // Distance between S and P
+    float fovy, aspect; // FOV and viewport aspect ratio
+    float fovy_work, aspect_work;
+    float near, far;
+    float n, f;
+    float l, r, t, b;
+    enum projType { ORTHO, FRUSTUM, PERSPECTIVE } pType = ORTHO;
 
     void update() {
         Wx = static_cast<float>(GetScreenWidth());

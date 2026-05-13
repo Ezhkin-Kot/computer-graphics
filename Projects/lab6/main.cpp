@@ -21,9 +21,9 @@ bool isIgnorableLine(const std::string &line) {
            line.front() == '#';
 }
 
-std::vector<ssu::Figure> readFromFile(const char *fileName, Screen &screen) {
+std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
     std::ifstream in(fileName);
-    std::vector<ssu::Figure> models;
+    std::vector<ssu::Model> models;
     Mat3 M = Mat3(1.f);
     Mat3 initM;
     std::vector<ssu::Path> figure;
@@ -88,8 +88,8 @@ std::vector<ssu::Figure> readFromFile(const char *fileName, Screen &screen) {
             initM = scale(S) * translate(-mVcx, -mVcy);
             figure.clear();
         } else if (cmd == "figure") {
-            models.push_back(ssu::Figure(figure, M * initM, Vx,
-                                         Vy)); // Добавляем рисунок в список
+            models.push_back(ssu::Model(figure, M * initM, Vx,
+                                        Vy)); // Добавляем рисунок в список
         } else if (cmd == "translate") {
             float Tx, Ty;  // Параметры преобразования переноса
             s >> Tx >> Ty; // Считываем параметры
@@ -127,7 +127,7 @@ int main() {
     Font f = LoadFontEx("Assets/Fonts/JetBrainsMono-Regular.ttf", 100,
                         codepoints, cnt);
 
-    std::vector<ssu::Figure> models;
+    std::vector<ssu::Model> models;
     Screen s;
 
     while (!WindowShouldClose()) {
@@ -155,7 +155,7 @@ int main() {
             }
         }
 
-        keymap_handler(s);
+        // keymap_handler(s);
 
         for (const auto &figure : models) {
             Mat3 TM = s.T * figure.modelM;
