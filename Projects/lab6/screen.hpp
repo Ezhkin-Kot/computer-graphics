@@ -10,7 +10,6 @@ struct Screen {
     float minY, maxY;
     float Wx, Wy, Wcx, Wcy;
     float Rx, Ry, Rcx, Rcy;
-    float rectAspect;
 
     Mat4 T = Mat4(1.f);
     Mat4 initT = Mat4(1.f);
@@ -38,17 +37,18 @@ struct Screen {
         Ry = maxY - minY;
         Rcx = minX;
         Rcy = maxY;
-        rectAspect = Rx / Ry;
+        if (Ry != 0) {
+            aspect_work = Rx / Ry;
+        }
     }
 
     void initWorkPars() {
         n = near;
         f = far;
         fovy_work = fovy;
-        aspect_work = aspect;
 
         float Vy = 2 * n * tan(fovy / 2.f);
-        float Vx = aspect * Vy;
+        float Vx = aspect_work * Vy;
         l = -Vx / 2.f;
         r = Vx / 2.f;
         b = -Vy / 2.f;

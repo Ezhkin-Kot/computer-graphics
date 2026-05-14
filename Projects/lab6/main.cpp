@@ -113,8 +113,8 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
             transforms.pop_back(); // выкидываем матрицу из стека
         }
     }
-    screen.initWorkPars();
     screen.update();
+    screen.initWorkPars();
     return models;
 }
 
