@@ -2,106 +2,90 @@
 
 #include "matrix.hpp"
 #include "screen.hpp"
-#include "transform.hpp"
 #include <raylib.h>
 
-inline void keymap_handler(Screen &screen) {
-    float cx = screen.Rx / 2.f + screen.left;
-    float cy = screen.Ry / 2.f + screen.top;
-    Mat3 &T = screen.T;
-
-    if (IsKeyDown(KEY_Q)) {
-        // Перенос начала координат в (Wcx, Wcy)
-        T = translate(-cx, -cy) * T;
-        // Поворот на -0.01 радиан относительно нового центра
-        T = rotate(-0.01f) * T;
-        T = translate(cx, cy) * T; // Перенос начала координат обратно
+inline void keymap_handler(Screen &s) {
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        s.initWorkPars();
     }
-    if (IsKeyDown(KEY_E)) {
-        T = translate(-cx, -cy) * T;
-        T = rotate(0.01f) * T; // Поворот на 0.01 радиан
-        T = translate(cx, cy) * T;
+    if (IsKeyPressed(KEY_ONE)) {
+        s.pType = s.ORTHO;
     }
-    if (IsKeyDown(KEY_R)) {
-        T = translate(-cx, -cy) * T;
-        T = rotate(0.05f) * T; // Поворот на 0.05 радиан
-        T = translate(cx, cy) * T;
+    if (IsKeyPressed(KEY_TWO)) {
+        s.pType = s.FRUSTUM;
     }
-    if (IsKeyDown(KEY_Y)) {
-        T = translate(-cx, -cy) * T;
-        T = rotate(-0.05f) * T; // Поворот на -0.05 радиан
-        T = translate(cx, cy) * T;
+    if (IsKeyPressed(KEY_THREE)) {
+        s.pType = s.PERSPECTIVE;
     }
-
     if (IsKeyDown(KEY_W)) {
-        T = translate(0, -1) * T;
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            s.T =
+                lookAt(Vec3(0, 0, -0.1f), Vec3(0, 0, -0.2f), Vec3(0, 1.f, 0)) *
+                s.T;
+        } else {
+            s.T = lookAt(Vec3(0, 0, -1.f), Vec3(0, 0, -2.f), Vec3(0, 1.f, 0)) *
+                  s.T;
+        }
     }
     if (IsKeyDown(KEY_S)) {
-        T = translate(0, 1) * T;
-    }
-    if (IsKeyDown(KEY_D)) {
-        T = translate(1, 0) * T;
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            s.T =
+                lookAt(Vec3(0, 0, 0.1f), Vec3(0, 0, 0), Vec3(0, 1.f, 0)) * s.T;
+        } else {
+            s.T = lookAt(Vec3(0, 0, 1.f), Vec3(0, 0, 0), Vec3(0, 1.f, 0)) * s.T;
+        }
     }
     if (IsKeyDown(KEY_A)) {
-        T = translate(-1, 0) * T;
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            s.T = lookAt(Vec3(-0.1f, 0, 0), Vec3(-0.1f, 0, -1.f),
+                         Vec3(0, 1.f, 0)) *
+                  s.T;
+        } else {
+            s.T =
+                lookAt(Vec3(-1.f, 0, 0), Vec3(-1.f, 0, -1.f), Vec3(0, 1.f, 0)) *
+                s.T;
+        }
+    }
+    if (IsKeyDown(KEY_D)) {
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            s.T =
+                lookAt(Vec3(0.1f, 0, 0), Vec3(0.1f, 0, -1.f), Vec3(0, 1.f, 0)) *
+                s.T;
+        } else {
+            s.T = lookAt(Vec3(1.f, 0, 0), Vec3(1.f, 0, -1.f), Vec3(0, 1.f, 0)) *
+                  s.T;
+        }
+    }
+    if (IsKeyDown(KEY_R)) {
+        Vec3 u_new = Mat3(rotate(0.1f, Vec3(0, 0, 1.f))) * Vec3(0, 1.f, 0);
+        s.T = lookAt(Vec3(0, 0, 0), Vec3(0, 0, -1.f), u_new) * s.T;
     }
     if (IsKeyDown(KEY_T)) {
-        T = translate(0, -10) * T;
-    }
-    if (IsKeyDown(KEY_G)) {
-        T = translate(0, 10) * T;
-    }
-    if (IsKeyDown(KEY_F)) {
-        T = translate(-10, 0) * T;
-    }
-    if (IsKeyDown(KEY_H)) {
-        T = translate(10, 0) * T;
-    }
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            Mat4 M = rotateP(0.1f, Vec3(1.f, 0, 0), Vec3(0, 0, -s.dist));
+            Vec3 u_new = Mat3(M) * Vec3(0, 1.f, 0);
+            Vec3 S_new = normalize(M * Vec4(0, 0, 0, 1.f));
+            s.T = lookAt(S_new, Vec3(0, 0, -s.dist), u_new) * s.T;
 
-    if (IsKeyDown(KEY_Z)) {
-        T = translate(-cx, -cy) * T;
-        T = scale(1.1f) * T; // Увеличение в 1.1 раза
-        T = translate(cx, cy) * T;
+        } else {
+            Mat4 M = rotate(0.1f, Vec3(1.f, 0, 0));
+            Vec3 u_new = Mat3(M) * Vec3(0, 1.f, 0);
+            Vec3 P_new = normalize(M * Vec4(0, 0, -1.f, 1.f));
+            s.T = lookAt({0, 0, 0}, P_new, u_new) * s.T;
+        }
     }
-    if (IsKeyDown(KEY_X)) {
-        T = translate(-cx, -cy) * T;
-        T = scale(1.0f / 1.1f) * T; // Уменьшение в 1.1 раза
-        T = translate(cx, cy) * T;
-    }
-
-    if (IsKeyPressed(KEY_U)) {
-        T = translate(-cx, -cy) * T;
-        T = mirrorX() * T;
-        T = translate(cx, cy) * T;
-    }
-    if (IsKeyPressed(KEY_J)) {
-        T = translate(-cx, -cy) * T;
-        T = mirrorY() * T;
-        T = translate(cx, cy) * T;
-    }
-
     if (IsKeyDown(KEY_I)) {
-        T = translate(-cx, -cy) * T;
-        T = scale(1.1f, 1.0f) * T;
-        T = translate(cx, cy) * T;
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            s.t -= 1;
+        } else {
+            s.t += 1;
+        }
     }
-    if (IsKeyDown(KEY_K)) {
-        T = translate(-cx, -cy) * T;
-        T = scale(1.0f / 1.1f, 1.0f) * T;
-        T = translate(cx, cy) * T;
-    }
-    if (IsKeyDown(KEY_O)) {
-        T = translate(-cx, -cy) * T;
-        T = scale(1.0f, 1.1f) * T;
-        T = translate(cx, cy) * T;
-    }
-    if (IsKeyDown(KEY_L)) {
-        T = translate(-cx, -cy) * T;
-        T = scale(1.0f, 1.0f / 1.1f) * T;
-        T = translate(cx, cy) * T;
-    }
-
-    if (IsKeyPressed(KEY_ESCAPE)) {
-        T = screen.initT;
+    if (IsKeyDown(KEY_J)) {
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            s.l -= 1;
+        } else {
+            s.l += 1;
+        }
     }
 }

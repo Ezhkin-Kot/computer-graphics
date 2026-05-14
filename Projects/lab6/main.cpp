@@ -113,6 +113,8 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
             transforms.pop_back(); // выкидываем матрицу из стека
         }
     }
+    screen.initWorkPars();
+    screen.update();
     return models;
 }
 
@@ -135,7 +137,6 @@ int main() {
         BeginDrawing();
         ClearBackground(SKYBLUE);
 
-        s.initWorkPars();
         s.update();
 
         DrawRectangleLinesEx({s.minX, s.minY, s.Rx, s.Ry}, 2, BLACK);
@@ -157,14 +158,32 @@ int main() {
             }
         }
 
-        // keymap_handler(s);
+        keymap_handler(s);
 
-        for (const auto &figure : models) {
-            Mat3 TM = s.T * figure.modelM;
-            for (const auto &lines : figure.paths) {
-                Vec2 start = normalize(TM * Vec3(lines.vertices[0], 1));
+        Mat4 proj; // матрица перехода в пространство отсечения
+        switch (s.pType) {
+        case s.ORTHO:
+            proj = ortho(s.l, s.r, s.b, s.t, -s.n, -s.f);
+            break;
+        case s.FRUSTUM:
+            proj = frustum(s.l, s.r, s.b, s.t, s.n, s.f);
+            break;
+        case s.PERSPECTIVE:
+            proj = perspective(s.fovy_work, s.aspect_work, s.n, s.f);
+            break;
+        }
+
+        Mat3 cdr = cadrRL(Vec2(-1.f, 1.f), Vec2(2.f, 2.f), Vec2(s.minX, s.minY),
+                          Vec2(s.Rx, s.Ry));
+        Mat4 C = proj * s.T;
+        for (const auto &model : models) {
+            Mat4 TM = C * model.modelM;
+            for (const auto &lines : model.paths) {
+                Vec3 start_3D = normalize(TM * Vec4(lines.vertices[0], 1.f));
+                Vec2 start = normalize(cdr * Vec3(Vec2(start_3D), 1.f));
                 for (const auto &line : lines.vertices) {
-                    Vec2 end = normalize(TM * Vec3(line, 1));
+                    Vec3 end_3D = normalize(TM * Vec4(line, 1.f));
+                    Vec2 end = normalize(cdr * Vec3(Vec2(end_3D), 1.f));
                     Vec2 tmpEnd = end;
                     if (clip(start, end, s.minX, s.minY, s.maxX, s.maxY)) {
                         DrawLineEx({start.x, start.y}, {end.x, end.y},

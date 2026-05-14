@@ -126,7 +126,10 @@ inline float dot(const Vec4 &a, const Vec4 &b) {
 inline Vec2 normalize(const Vec3 &v) { return Vec2(v.x / v.z, v.y / v.z); }
 
 inline Vec3 normalize(const Vec4 &v) {
-    return Vec3(v.x / v.a, v.y / v.a, v.z / v.a);
+    if (v.a != 0) {
+        return Vec3(v.x / v.a, v.y / v.a, v.z / v.a);
+    }
+    return Vec3(v.x, v.y, v.z);
 }
 
 inline Vec2::Vec2(Vec3 v)
