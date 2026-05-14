@@ -24,10 +24,10 @@ bool isIgnorableLine(const std::string &line) {
 std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
     std::ifstream in(fileName);
     std::vector<ssu::Model> models;
-    Mat3 M = Mat3(1.f);
-    Mat3 initM;
+    Mat4 M = Mat4(1.f);
+    Mat4 initM;
     std::vector<ssu::Path> figure;
-    std::vector<Mat3> transforms;
+    std::vector<Mat4> transforms;
     float Vx, Vy;
     int r, g, b;
     float thickness;
@@ -40,25 +40,24 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
             continue;
         }
         std::stringstream s(line);
-        std::string cmd;      // Переменная для имени команды
-        s >> cmd;             // Считываем имя команды
-        if (cmd == "frame") { // Размеры изображения
-            s >> Vx >> Vy;
-            float figAspect = Vx / Vy;
-            Mat3 T1 = translate(-Vx / 2, -Vy / 2);
-            float S =
-                figAspect < screen.rectAspect ? screen.Ry / Vy : screen.Rx / Vx;
-            Mat3 S1 = scale(S, -S);
-            Mat3 T2 = translate(screen.Rcx + screen.Rx / 2,
-                                screen.Rcy - screen.Ry / 2);
-            screen.initT = T2 * (S1 * T1);
-            screen.T = screen.initT;
+        std::string cmd; // Переменная для имени команды
+        s >> cmd;        // Считываем имя команды
+        if (cmd == "camera") {
+            // Координаты точки наблюдения
+            s >> screen.S.x >> screen.S.y >> screen.S.z;
+            // Точка, в которую направлен вектор наблюдения
+            s >> screen.P.x >> screen.P.y >> screen.P.z;
+            // Вектор направления вверх
+            s >> screen.u.x >> screen.u.y >> screen.u.z;
+        } else if (cmd == "screen") {
+            s >> screen.fovy_work >> screen.aspect >> screen.near >> screen.far;
+            screen.fovy = screen.fovy_work / 180.f * PI;
         } else if (cmd == "color") {     // Цвет линии
             s >> r >> g >> b;            // Считываем три компоненты цвета
         } else if (cmd == "thickness") { // Толщина линии
             s >> thickness;              // Считываем значение толщины
         } else if (cmd == "path") {      // Набор точек
-            std::vector<Vec2> vertices;  // Список точек ломаной
+            std::vector<Vec3> vertices;  // Список точек ломаной
             int n;                       // Количество точек
             s >> n;
             std::string str1; // Дополнительная строка для чтения из файла
@@ -67,10 +66,10 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
                 if (isIgnorableLine(str1)) {
                     continue;
                 }
-                float x, y;
+                float x, y, z;
                 std::stringstream s1(str1);
-                s1 >> x >> y;
-                vertices.push_back(Vec2(x, y)); // Добавляем точку в список
+                s1 >> x >> y >> z;
+                vertices.push_back(Vec3(x, y, z)); // Добавляем точку в список
                 --n;
             }
             // Все точки считаны, генерируем ломаную (path) и кладем ее в список
@@ -80,31 +79,33 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
                                              static_cast<uint8_t>(b), 255},
                                        thickness));
         } else if (cmd == "model") {
-            float mVcx, mVcy, mVx, mVy;      // Параметры команды model
-            s >> mVcx >> mVcy >> mVx >> mVy; // Считываем значения переменных
+            float mVcx, mVcy, mVcz, mVx, mVy, mVz; // Параметры команды model
+            // Считываем значения переменных
+            s >> mVcx >> mVcy >> mVcz >> mVx >> mVy >> mVz;
             float S = mVx / mVy < 1 ? 2.f / mVy : 2.f / mVx;
             // Сдвиг точки привязки из начала координат в нужную позицию
             // После которого проводим масштабирование
-            initM = scale(S) * translate(-mVcx, -mVcy);
+            initM = scale(S, S, S) * translate(-mVcx, -mVcy, -mVcz);
             figure.clear();
         } else if (cmd == "figure") {
             models.push_back(ssu::Model(figure, M * initM, Vx,
                                         Vy)); // Добавляем рисунок в список
         } else if (cmd == "translate") {
-            float Tx, Ty;  // Параметры преобразования переноса
-            s >> Tx >> Ty; // Считываем параметры
+            float Tx, Ty, Tz;    // Параметры преобразования переноса
+            s >> Tx >> Ty >> Tz; // Считываем параметры
             // Добавляем перенос к общему преобразованию
-            M = translate(Tx, Ty) * M;
+            M = translate(Tx, Ty, Tz) * M;
         } else if (cmd == "scale") {
             float S; // Параметр масштабирования
             s >> S;  // Считываем параметр
             // Добавляем масштабирование к общему преобразованию
-            M = scale(S) * M;
+            M = scale(S, S, S) * M;
         } else if (cmd == "rotate") {
-            float theta; // Угол поворота в градусах
-            s >> theta;  // Считываем параметр
+            float theta;                  // Угол поворота в градусах
+            float nx, ny, nz;             // Координаты вектора поворота
+            s >> theta >> nx >> ny >> nz; // Считываем параметр
             // Добавляем поворот к общему преобразованию
-            M = rotate(theta / 180.f * PI) * M;
+            M = rotate(theta / 180.f * PI, Vec3(nx, ny, nz)) * M;
         } else if (cmd == "pushTransform") {
             transforms.push_back(M); // сохраняем матрицу в стек
         } else if (cmd == "popTransform") {
@@ -134,6 +135,7 @@ int main() {
         BeginDrawing();
         ClearBackground(SKYBLUE);
 
+        s.initWorkPars();
         s.update();
 
         DrawRectangleLinesEx({s.minX, s.minY, s.Rx, s.Ry}, 2, BLACK);

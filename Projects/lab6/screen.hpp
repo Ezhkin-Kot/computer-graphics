@@ -1,6 +1,7 @@
 #pragma once
 
 #include "matrix.hpp"
+#include "transform.hpp"
 #include <raylib.h>
 
 struct Screen {
@@ -38,5 +39,22 @@ struct Screen {
         Rcx = minX;
         Rcy = maxY;
         rectAspect = Rx / Ry;
+    }
+
+    void initWorkPars() {
+        n = near;
+        f = far;
+        fovy_work = fovy;
+        aspect_work = aspect;
+
+        float Vy = 2 * n * tan(fovy / 2.f);
+        float Vx = aspect * Vy;
+        l = -Vx / 2.f;
+        r = Vx / 2.f;
+        b = -Vy / 2.f;
+        t = Vy / 2.f;
+
+        dist = length(P - S);
+        T = lookAt(S, P, u);
     }
 };
