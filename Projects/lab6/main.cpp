@@ -117,7 +117,7 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
 
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(600, 480, "Lab 4");
+    InitWindow(600, 480, "Lab 6");
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
     SetWindowMinSize(155, 120);
