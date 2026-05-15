@@ -16,6 +16,7 @@ path 3
 1 0 0
 
 pushTransform
+rotate 90 1 1 0
 rotate 90 0.0 0.0 1.0
 scale 0.75
 pushTransform
@@ -69,6 +70,7 @@ path 2
 1 0 1
 
 pushTransform
+rotate 90 1 1 0
 rotate 90 0.0 0.0 1.0
 scale 0.5
 pushTransform
