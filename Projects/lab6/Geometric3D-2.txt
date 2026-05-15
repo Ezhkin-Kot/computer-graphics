@@ -1,0 +1,99 @@
+camera 10 5 5 10 5 0 0 1 0
+screen 90 2 5 20
+
+frame 20 10
+
+model 0.5 0.433 0.4082 1 0.866 0.8165
+path 5
+0 0 0
+0.5 0.2887 0.8165
+1 0 0
+0.5 0.866 0
+0.5 0.2887 0.8165
+path 3
+0.5 0.866 0
+0 0 0
+1 0 0
+
+pushTransform
+rotate 90 0.0 0.0 1.0
+scale 0.75
+pushTransform
+
+translate 7 0 0.0
+pushTransform
+translate 10 9 0.1
+figure
+
+popTransform
+rotate -90 0.0 0.0 1.0
+pushTransform
+translate 10 9 0.2
+figure
+
+popTransform
+rotate -90 0.0 0.0 1.0
+pushTransform
+translate 10 9 0.3
+figure
+
+popTransform
+popTransform
+
+scale 2
+
+translate 10 8 0.5
+figure
+popTransform
+
+model 0.5 0.5 0.5 1 1 1 
+path 10
+0 1 0
+1 1 0
+1 1 1
+0 1 1
+0 1 0
+0 0 0
+1 0 0
+1 0 1
+0 0 1
+0 1 1
+path 2
+0 0 0
+0 0 1
+path 2
+1 1 0
+1 0 0
+path 2
+1 1 1
+1 0 1
+
+pushTransform
+rotate 90 0.0 0.0 1.0
+scale 0.5
+pushTransform
+
+translate 7 0 -0.5
+
+rotate -30 0.0 0.0 1.0
+pushTransform
+translate 10 9 -0.6
+figure
+
+popTransform
+rotate -30 0.0 0.0 1.0
+pushTransform
+translate 10 9 -0.7
+figure
+
+popTransform
+rotate -60 0.0 0.0 1.0
+pushTransform
+translate 10 9 -0.8
+figure
+
+popTransform
+rotate -30 0.0 0.0 1.0
+pushTransform
+translate 10 9 -0.9
+figure
