@@ -19,14 +19,10 @@ struct Path {
 struct Model {
     std::vector<Path> paths;
     Mat4 modelM;
-    float Vx;
-    float Vy;
 
     Model() = default;
-    Model(std::vector<Path> paths, Mat4 mat, float Vx, float Vy)
+    Model(std::vector<Path> paths, Mat4 mat)
         : paths(paths),
-          modelM(mat),
-          Vx(Vx),
-          Vy(Vy) {}
+          modelM(mat) {}
 };
 } // namespace ssu

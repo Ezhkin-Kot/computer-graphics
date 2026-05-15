@@ -28,14 +28,12 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
     Mat4 initM;
     std::vector<ssu::Path> figure;
     std::vector<Mat4> transforms;
-    float Vx, Vy;
-    int r, g, b;
-    float thickness;
+    float mVcx, mVcy, mVcz, mVx, mVy, mVz;
+    int r = 0, g = 0, b = 0;
+    float thickness = 1.0f;
     std::string line; // Временная переменная, в которую считываются строки
 
-    while (in) {
-        // Считываем очередную строку
-        getline(in, line);
+    while (getline(in, line)) {
         if (isIgnorableLine(line)) {
             continue;
         }
@@ -79,17 +77,16 @@ std::vector<ssu::Model> readFromFile(const char *fileName, Screen &screen) {
                                              static_cast<uint8_t>(b), 255},
                                        thickness));
         } else if (cmd == "model") {
-            float mVcx, mVcy, mVcz, mVx, mVy, mVz; // Параметры команды model
             // Считываем значения переменных
             s >> mVcx >> mVcy >> mVcz >> mVx >> mVy >> mVz;
-            float S = mVx / mVy < 1 ? 2.f / mVy : 2.f / mVx;
+            float S = 2.f / std::max({mVx, mVy, mVz});
             // Сдвиг точки привязки из начала координат в нужную позицию
             // После которого проводим масштабирование
             initM = scale(S, S, S) * translate(-mVcx, -mVcy, -mVcz);
             figure.clear();
         } else if (cmd == "figure") {
-            models.push_back(ssu::Model(figure, M * initM, Vx,
-                                        Vy)); // Добавляем рисунок в список
+            models.push_back(
+                ssu::Model(figure, M * initM)); // Добавляем рисунок в список
         } else if (cmd == "translate") {
             float Tx, Ty, Tz;    // Параметры преобразования переноса
             s >> Tx >> Ty >> Tz; // Считываем параметры
